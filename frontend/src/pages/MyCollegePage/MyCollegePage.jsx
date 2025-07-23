@@ -132,21 +132,15 @@ const MyCollegePage = () => {
             <MessageCircle className="w-16 h-16 mx-auto" />
           </div>
           <p className="text-xl text-gray-800 mb-4">
-            {error === "No admission found for this user" ? "No admission found" : "Access Denied"}
+            {error === "No admission found"}
           </p>
           <p className="text-gray-600">
-            {error === "No admission found for this user" 
+            {error === "No admission found" 
               ? "Please apply to a college first to view this page."
-              : error
+              :"Please apply to a college first to view this page."
             }
           </p>
-          {/* Add retry button */}
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Retry
-          </button>
+
         </div>
       </div>
     );
