@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BookOpen, NotebookPen, Star } from 'lucide-react';
 
 const CollegeCard = ({ college }) => {
      if (!college) return null;
@@ -15,13 +16,13 @@ const CollegeCard = ({ college }) => {
                 className="w-full h-48 object-cover"
               />
               <div className="p-4 space-y-2">
-                <h3 className="text-xl font-semibold">{college.name}</h3>
-                <p className="text-gray-600">⭐ Rating: {college.rating}</p>
-                <p className="text-gray-600">
-                  📅 Admission: {college.admissionProcess.dates}
+                <h3 className="md:text-xl text-lg font-semibold">{college.name}</h3>
+                <p className="text-gray-600 flex items-center gap-2"><Star className="text-orange-400"/> Rating: {college.rating}</p>
+                <p className="text-gray-600 flex items-center gap-2">
+                  <BookOpen className="text-blue-400"/>Admission: {college.admissionProcess.dates}
                 </p>
-                <p className="text-gray-600">
-                  📚 Research Projects: {college.researchCount}
+                <p className="text-gray-600 flex items-center gap-2">
+                  <NotebookPen className="text-red-400"/>Research Projects: {college.researchCount}
                 </p>
               </div>
             </div>

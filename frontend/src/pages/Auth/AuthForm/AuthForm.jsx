@@ -118,7 +118,7 @@ const AuthForm = ({ mode }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-50 to-purple-100 px-4">
+    <div className=" flex items-center justify-center bg-gradient-to-tr from-blue-50 to-purple-100 px-4">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           {mode === "signin" ? "Sign In to Your Account" : "Create a New Account"}

@@ -45,7 +45,7 @@ const ExamFinder = () => {
 
   return (
     <>
-      <div className="relative h-[450px] overflow-hidden">
+      <div className="relative h-[350px] md:h-[450px] overflow-hidden">
         {/* Background Image Slider */}
         <div className="absolute inset-0 z-0">
           {backgroundImages.map((image, index) => (
@@ -65,7 +65,7 @@ const ExamFinder = () => {
         </div>
 
         {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-center h-[450px] px-4 text-center">
+        <div className="relative z-10 flex flex-col items-center justify-center  h-[350px]  md:h-[450px] px-4 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 drop-shadow-2xl">
             <Typewriter
               words={["Find Colleges in BD"]}
@@ -79,7 +79,10 @@ const ExamFinder = () => {
           </h1>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto mb-8">
+          <form
+            onSubmit={handleSearch}
+            className="w-full max-w-4xl mx-auto mb-8"
+          >
             <div className="relative">
               <div className="flex rounded-lg overflow-hidden shadow-2xl bg-white">
                 <div className="flex-1 relative">

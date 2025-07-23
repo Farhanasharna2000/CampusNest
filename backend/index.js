@@ -100,7 +100,7 @@ async function run() {
         // Add college ID and submission timestamp
         admissionData.collegeId = parseInt(admissionData.collegeId);
         admissionData.submittedAt = new Date();
-        admissionData.status = "submitted"; 
+        admissionData.status = "submitted";
 
         // Check if user already has any admission
         const existingAdmission = await admissionsCollection.findOne({
@@ -141,45 +141,62 @@ async function run() {
       }
     });
 
-
     // Reviews API
     // Add a new review
-app.post("/reviews", async (req, res) => {
-  try {
-    const { userEmail, collegeId, text, rating, userName,course,collegeName } = req.body;
+    app.post("/reviews", async (req, res) => {
+      try {
+        const {
+          userEmail,
+          collegeId,
+          text,
+          rating,
+          userName,
+          course,
+          collegeName,
+        } = req.body;
 
-    // Check if the user has an admission
-    const admission = await admissionsCollection.findOne({ email: userEmail });
+        // Check if the user has an admission
+        const admission = await admissionsCollection.findOne({
+          email: userEmail,
+        });
 
-    if (!admission) {
-      return res.status(403).json({ message: "Only admitted users can submit a review" });
-    }
+        if (!admission) {
+          return res
+            .status(403)
+            .json({ message: "Only admitted users can submit a review" });
+        }
 
-    //if multiple reviews by same user for the same college
-    const existingReview = await reviewsCollection.findOne({ collegeId, userEmail });
-    if (existingReview) {
-      return res.status(409).json({ message: "You have already submitted a review for this college" });
-    }
+        //if multiple reviews by same user for the same college
+        const existingReview = await reviewsCollection.findOne({
+          collegeId,
+          userEmail,
+        });
+        if (existingReview) {
+          return res
+            .status(409)
+            .json({
+              message: "You have already submitted a review for this college",
+            });
+        }
 
-    const reviewData = {
-      userEmail,
-      collegeId,
-      collegeName,
-      course,
-      userName,
-      text,
-      rating,
-      createdAt: new Date(),
-    };
+        const reviewData = {
+          userEmail,
+          collegeId,
+          collegeName,
+          course,
+          userName,
+          text,
+          rating,
+          createdAt: new Date(),
+        };
 
-    const result = await reviewsCollection.insertOne(reviewData);
-    res.status(201).json({ message: "Review submitted", result });
-  } catch (error) {
-    console.error("Review error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
+        const result = await reviewsCollection.insertOne(reviewData);
+        res.status(201).json({ message: "Review submitted", result });
+      } catch (error) {
+        console.error("Review error:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
 
     // Get all reviews
     app.get("/reviews", async (req, res) => {
@@ -194,7 +211,6 @@ app.post("/reviews", async (req, res) => {
         res.status(500).send({ message: "Server error" });
       }
     });
-
   } finally {
     // Connection will remain open for the lifetime of the application
   }

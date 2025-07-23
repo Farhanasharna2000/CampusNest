@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
+import { toast } from "react-toastify";
 
 const ProfilePage = () => {
   const { user, updateUserProfile, signoutUser } = useAuth();
@@ -55,7 +56,7 @@ const ProfilePage = () => {
         address: formData.address,
       });
 
-      alert("Profile updated successfully");
+      toast.success("Profile updated successfully");
       setEditMode(false);
     } catch (err) {
       console.error("Profile update failed", err);

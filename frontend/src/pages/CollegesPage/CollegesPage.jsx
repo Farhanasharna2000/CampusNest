@@ -40,8 +40,9 @@ const CollegesPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h2 className="text-3xl font-bold mb-6 text-center">
+    <div className="container mx-auto py-6 md:py-10 px-4">
+      <h2 className="md:text-5xl text-2xl text-center font-bold bg-gradient-to-r from-blue-800 to-blue-600 bg-clip-text
+           text-transparent pb-4 md:pb-10">
         Colleges in Bangladesh
       </h2>
 

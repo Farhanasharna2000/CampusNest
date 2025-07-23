@@ -1,7 +1,8 @@
 import { Star, ThumbsUp, BookOpen, Users } from "lucide-react";
 import { useState, useEffect } from "react";
-import { format} from "date-fns";
+import { format } from "date-fns";
 import { useReviews } from "../../hooks/useReviews";
+import LoadingSpinner from "./../LoadingSpinner";
 
 const renderStars = (count) => (
   <div className="flex items-center gap-1 mb-4">
@@ -27,18 +28,41 @@ const CollegeReviewsSection = () => {
   }, []);
 
   return (
-    <section className="relative bg-white py-18 px-4 overflow-hidden">
-      {/* Background SVG */}
-      <div className="absolute inset-0">
-        <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 1200 800" fill="none">
-          <path d="M0,400 C300,200 600,600 1200,300 L1200,0 L0,0 Z" fill="url(#blueGradient1)" />
-          <path d="M0,600 C400,400 800,700 1200,500 L1200,800 L0,800 Z" fill="url(#blueGradient2)" />
+    <section className="relative bg-white py-6 md:py-10 px-4 overflow-hidden w-full">
+      {/* Background SVG - Fixed for full width */}
+      <div className="absolute inset-0 w-full h-full">
+        <svg
+          className="absolute top-0 left-0 w-full h-full min-w-full min-h-full"
+          viewBox="0 0 1200 800"
+          fill="none"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <path
+            d="M0,400 C300,200 600,600 1200,300 L1200,0 L0,0 Z"
+            fill="url(#blueGradient1)"
+          />
+          <path
+            d="M0,600 C400,400 800,700 1200,500 L1200,800 L0,800 Z"
+            fill="url(#blueGradient2)"
+          />
           <defs>
-            <linearGradient id="blueGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="blueGradient1"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#DBEAFE" />
               <stop offset="100%" stopColor="#BFDBFE" />
             </linearGradient>
-            <linearGradient id="blueGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="blueGradient2"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#EFF6FF" />
               <stop offset="100%" stopColor="#DBEAFE" />
             </linearGradient>
@@ -48,49 +72,59 @@ const CollegeReviewsSection = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4">
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <div className="inline-flex items-center bg-blue-100 rounded-full px-6 py-3 mb-6">
+        <div
+          className={`text-center pb-4 md:pb-6 transform transition-all duration-1000 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          }`}
+        >
+          <div className="inline-flex items-center bg-blue-100 rounded-full px-6 py-3 mb-4 md:mb-6">
             <ThumbsUp size={20} className="text-blue-600 mr-2" />
-            <span className="text-blue-800 font-semibold">Verified Student Reviews</span>
+            <span className="text-blue-800 font-semibold text-sm md:text-base">
+              Verified Student Reviews
+            </span>
           </div>
 
-          <h2 className="text-6xl font-black text-blue-900 mb-6 leading-tight">
-            Real Students,<br />
+          <h2 className="md:text-5xl text-2xl font-bold text-blue-900 mb-4 md:mb-6 leading-tight">
+            Real Students,
+            <br />
             <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
               Real Stories
             </span>
           </h2>
 
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Get insights from students who've been there, done that, and are ready to share their journey with you.
+          <p className="md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Get insights from students who've been there, done that, and are
+            ready to share their journey with you.
           </p>
         </div>
 
         {/* Loading / Error */}
-        {loading && <p className="text-center text-blue-600">Loading reviews...</p>}
+        {loading && <LoadingSpinner />}
         {error && <p className="text-center text-red-600">Error: {error}</p>}
 
         {/* Reviews Carousel */}
         {!loading && reviews.length > 0 && (
           <div className="relative overflow-hidden rounded-3xl">
-            <div className="flex animate-smooth-scroll space-x-8 py-8">
+            <div className="flex flex-nowrap animate-smooth-scroll space-x-8 py-8 min-w-[300%]">
               {[...reviews, ...reviews, ...reviews].map((review, index) => (
                 <div
                   key={review._id || index}
-                  className="group relative bg-white rounded-3xl p-8 w-96 flex-shrink-0 shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-500 hover:scale-105"
+                  className="group relative bg-white rounded-3xl p-4 md:p-8 w-72 md:w-96 flex-shrink-0 shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-500 hover:scale-105"
                 >
                   <div className="relative z-10">
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-start justify-between mb-4 md:mb-6">
                       <div>
-                        <h3 className="text-xl font-bold text-blue-900 mb-1 leading-tight">
+                        <h3 className="md:text-xl text-lg font-bold text-blue-900 mb-1 leading-tight">
                           {review.collegeName}
                         </h3>
                         <div className="flex items-center text-sm text-gray-500 space-x-2">
                           <BookOpen size={14} />
                           <span>{review.course}</span>
                           <span>•</span>
-                          <span>{format(new Date(review.createdAt), 'yyyy')}</span>
+                          <span>
+                            {format(new Date(review.createdAt), "yyyy")}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -111,9 +145,9 @@ const CollegeReviewsSection = () => {
                           {review.userName}
                         </span>
                       </div>
-                       <span className="text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
-                      Verified Student
-                    </span>
+                      <span className="text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
+                        Verified Student
+                      </span>
                     </div>
                   </div>
 
@@ -129,8 +163,12 @@ const CollegeReviewsSection = () => {
       {/* Animation Styles */}
       <style jsx>{`
         @keyframes smooth-scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); }
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-33.33%);
+          }
         }
 
         .animate-smooth-scroll {
@@ -143,7 +181,7 @@ const CollegeReviewsSection = () => {
 
         @media (max-width: 768px) {
           .animate-smooth-scroll {
-            animation-duration: 60s;
+            animation-duration: 10s;
           }
         }
 

@@ -16,9 +16,11 @@ import { colleges } from "../../constants/collegesData";
 import useAuth from "../../hooks/useAuth";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
 import { useCallback } from "react";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { toast } from "react-toastify";
 
 const MyCollegePage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth(); // Add authLoading if available
   const axiosPublic = useAxiosPublic();
 
   const [admissionData, setAdmissionData] = useState(null);
@@ -30,31 +32,57 @@ const MyCollegePage = () => {
   const [reviewText, setReviewText] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  const fetchAdmissionData = useCallback(async (userEmail) => {
-    try {
-      const response = await axiosPublic.get(`/admissions/${userEmail}`);
-      const data = response.data;
+  const fetchAdmissionData = useCallback(
+    async (userEmail) => {
+      try {
+        console.log("Fetching admission data for:", userEmail); // Debug log
+        const response = await axiosPublic.get(`/admissions/${userEmail}`);
+        const data = response.data;
 
-      setAdmissionData(data);
+        console.log("Admission data received:", data); // Debug log
 
-      const collegeInfo = colleges.find((c) => c.id === data.collegeId);
-      setCollege(collegeInfo);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load admission data");
-    } finally {
-      setLoading(false);
-    }
-  }, [axiosPublic]);
+        setAdmissionData(data);
+
+        const collegeInfo = colleges.find((c) => c.id === data.collegeId);
+        setCollege(collegeInfo);
+        
+        setError(null); // Clear any previous errors
+      } catch (err) {
+        console.error("Error fetching admission data:", err);
+        
+        // More specific error handling
+        if (err.response?.status === 404) {
+          setError("No admission found for this user");
+        } else if (err.response?.status === 401) {
+          setError("Authentication required");
+        } else {
+          setError("Failed to load admission data");
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [axiosPublic]
+  );
 
   useEffect(() => {
+    console.log("User state:", user); // Debug log
+    
+    // Wait for auth to be ready and user to be available
+    if (authLoading) {
+      return; // Still loading auth state
+    }
+
     if (user?.email) {
+      setLoading(true);
+      setError(null);
       fetchAdmissionData(user.email);
     } else {
-      setError("User not authenticated.");
+      // User is not authenticated or email is missing
+      setError("User not authenticated");
       setLoading(false);
     }
-  }, [user?.email, fetchAdmissionData]);
+  }, [user, authLoading, fetchAdmissionData]); // Include authLoading in dependencies
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -63,7 +91,7 @@ const MyCollegePage = () => {
     setSubmittingReview(true);
     try {
       if (!college || !admissionData) {
-        alert("Missing college or admission data.");
+        toast.error("Missing college or admission data.");
         setSubmittingReview(false);
         return;
       }
@@ -82,26 +110,18 @@ const MyCollegePage = () => {
 
       setReviewText("");
       setRating(5);
-      alert("✅ Review submitted successfully!");
+      toast.success("Review submitted successfully!");
     } catch (err) {
-      console.error(err);
-      alert("Error submitting review");
+      console.error("Error submitting review:", err);
+       toast.error("You have already submitted a review for this college");
     } finally {
       setSubmittingReview(false);
     }
   };
 
-
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <GraduationCap className="w-16 h-16 text-blue-600 animate-bounce mx-auto mb-4" />
-          <p className="text-xl text-gray-600">Loading your college information...</p>
-        </div>
-      </div>
-    );
+  // Show loading while auth is being determined
+  if (authLoading || loading) {
+    return <LoadingSpinner />
   }
 
   if (error) {
@@ -111,8 +131,22 @@ const MyCollegePage = () => {
           <div className="text-red-500 mb-4">
             <MessageCircle className="w-16 h-16 mx-auto" />
           </div>
-          <p className="text-xl text-gray-800 mb-4">No admission found</p>
-          <p className="text-gray-600">Please apply to a college first to view this page.</p>
+          <p className="text-xl text-gray-800 mb-4">
+            {error === "No admission found for this user" ? "No admission found" : "Access Denied"}
+          </p>
+          <p className="text-gray-600">
+            {error === "No admission found for this user" 
+              ? "Please apply to a college first to view this page."
+              : error
+            }
+          </p>
+          {/* Add retry button */}
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -122,50 +156,62 @@ const MyCollegePage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-gray-600">College information not found.</p>
+          <p className="text-xl text-gray-600">
+            College information not found.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <div className=" bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-6 md:py-10 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex justify-center items-center mb-4">
             <GraduationCap className="w-12 h-12 mr-4" />
-            <h1 className="text-4xl font-bold">My College</h1>
+            <h1 className="md:text-5xl text-2xl font-bold">My College</h1>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
+      <div className="container mx-auto px-4 py-10 space-y-10">
         {/* College Information */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-blue-100">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-            <div className="flex justify-between items-start">
+            <div className="md:flex justify-between items-start">
               <div>
-   <h2 className="text-3xl font-bold">{college.name}</h2>
-            <div className="flex items-center mt-2">
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star
-                  key={i}
-                  className={`w-5 h-5 ${
-                    college.rating >= i + 1 ? "text-yellow-400" : "text-blue-300"
-                  }`}
-                  fill={college.rating >= i + 1 ? "#facc15" : "none"}
-                />
-              ))}
-              <span className="ml-2 text-blue-100">({college.rating}/5)</span>
-            </div>
+                <h2 className="md:text-3xl text-xl font-bold">{college.name}</h2>
+                <div className="flex items-center mt-2">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${
+                        college.rating >= i + 1
+                          ? "text-yellow-400"
+                          : "text-blue-300"
+                      }`}
+                      fill={college.rating >= i + 1 ? "#facc15" : "none"}
+                    />
+                  ))}
+                
+                </div>
               </div>
-                <div className="flex items-center justify-start">
-            <Clock className="w-5 h-5 mr-2" />
-            <span>Application Submitted on : {new Date(admissionData.submittedAt).toLocaleDateString()}</span>
-          </div>
+              <div className="flex items-center justify-start mt-4 md:mt-0">
+                <Clock className="w-5 h-5 mr-2" />
+                <span className="text-sm md:text-base">
+                  Application Submitted on :{" "}
+                  {new Date(admissionData.submittedAt).toLocaleDateString()}
+                </span>
+              </div>
             </div>
-         
           </div>
 
           <div className="p-6">
@@ -176,7 +222,7 @@ const MyCollegePage = () => {
                   <img
                     src={college.image}
                     alt={college.name}
-                    className="w-full h-64 object-cover rounded-xl shadow-md"
+                    className="w-full md:h-80 object-cover rounded-xl shadow-md"
                   />
                 ) : (
                   <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center">
@@ -188,10 +234,13 @@ const MyCollegePage = () => {
               {/* College Details */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">College Information</h3>
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                    College Information
+                  </h3>
                   <div className="space-y-2 text-gray-600">
                     <p>
-                      <strong>Established:</strong> {college.established || "N/A"}
+                      <strong>Established:</strong>{" "}
+                      {college.established || "N/A"}
                     </p>
                     <p>
                       <strong>Location:</strong> {college.location || "N/A"}
@@ -207,7 +256,8 @@ const MyCollegePage = () => {
                     )}
                     {college.sports && (
                       <p>
-                        <strong>Sports:</strong> {college.sports.overview || college.sports}
+                        <strong>Sports:</strong>{" "}
+                        {college.sports.overview || college.sports}
                       </p>
                     )}
                   </div>
@@ -218,96 +268,154 @@ const MyCollegePage = () => {
         </div>
 
         {/* Your Application Details */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-          <div className="flex justify-center items-center mb-6">
-            <h2 className="text-2xl font-bold text-blue-800">Application Details</h2>
+      <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl shadow-2xl p-8 border-2 border-blue-200 relative overflow-hidden">
+  {/* Decorative Background Elements */}
+  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-200 to-transparent rounded-full opacity-30 -translate-y-8 translate-x-8"></div>
+  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-300 to-transparent rounded-full opacity-20 translate-y-4 -translate-x-4"></div>
+  
+  {/* Header Section */}
+  <div className="flex justify-center items-center mb-8 relative">
+    <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-4 rounded-2xl shadow-lg">
+      <h2 className="md:text-3xl text-xl font-bold tracking-wide">
+        Application Details
+      </h2>
+    </div>
+  </div>
+
+  <div className="grid md:grid-cols-2 gap-10">
+    {/* Student Photo Section */}
+    <div className="flex justify-center">
+      {admissionData.imageUrl ? (
+        <div className="text-center relative">
+          <div className="relative">
+            <img
+              src={admissionData.imageUrl}
+              alt="Student Photo"
+              className="w-80 h-80 object-cover rounded-3xl shadow-2xl border-4 border-white ring-4 ring-blue-200 transition-transform hover:scale-105"
+            />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-blue-900/20 to-transparent"></div>
           </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Student Photo */}
-            <div className="flex justify-center">
-              {admissionData.imageUrl ? (
-                <div className="text-center">
-                  <img
-                    src={admissionData.imageUrl}
-                    alt="Student Photo"
-                    className="w-96 h-96 object-cover rounded-2xl shadow-lg border-4 border-blue-100"
-                  />
-                </div>
-              ) : (
-                <div className="w-48 h-48 bg-gray-200 rounded-2xl flex items-center justify-center">
-                  <User className="w-16 h-16 text-gray-400" />
-                </div>
-              )}
-            </div>
-
-            {/* Application Information */}
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <User className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Full Name</p>
-                  <p className="font-semibold text-gray-800">{admissionData.candidateName}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <BookOpen className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Subject</p>
-                  <p className="font-semibold text-gray-800">{admissionData.subject}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <Mail className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-semibold text-gray-800">{admissionData.email}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <Phone className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-semibold text-gray-800">{admissionData.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <MapPin className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Address</p>
-                  <p className="font-semibold text-gray-800">{admissionData.address}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <Calendar className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Date of Birth</p>
-                  <p className="font-semibold text-gray-800">
-                    {new Date(admissionData.dob).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="mt-4 bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-md">
+            <p className="text-blue-800 font-semibold">Student Photo</p>
           </div>
         </div>
+      ) : (
+        <div className="w-80 h-80 bg-gradient-to-br from-blue-100 to-blue-50 rounded-3xl flex items-center justify-center shadow-xl border-4 border-white ring-4 ring-blue-200">
+          <div className="text-center">
+            <User className="w-20 h-20 text-blue-400 mx-auto mb-3" />
+            <p className="text-blue-600 font-medium">No Photo Available</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Application Information Section */}
+    <div className="space-y-6">
+      {/* Full Name */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-blue-100 hover:shadow-xl transition-shadow">
+        <div className="flex items-center">
+          <div className="bg-blue-600 p-3 rounded-full mr-4 shadow-md">
+            <User className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600 font-medium uppercase tracking-wide">Full Name</p>
+            <p className="font-bold text-gray-800 text-lg">
+              {admissionData.candidateName}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Subject */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-blue-100 hover:shadow-xl transition-shadow">
+        <div className="flex items-center">
+          <div className="bg-blue-600 p-3 rounded-full mr-4 shadow-md">
+            <BookOpen className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600 font-medium uppercase tracking-wide">Subject</p>
+            <p className="font-bold text-gray-800 text-lg">
+              {admissionData.subject}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Email */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-blue-100 hover:shadow-xl transition-shadow">
+        <div className="flex items-center">
+          <div className="bg-blue-600 p-3 rounded-full mr-4 shadow-md">
+            <Mail className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600 font-medium uppercase tracking-wide">Email</p>
+            <p className="font-bold text-gray-800 text-lg">
+              {admissionData.email}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Phone */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-blue-100 hover:shadow-xl transition-shadow">
+        <div className="flex items-center">
+          <div className="bg-blue-600 p-3 rounded-full mr-4 shadow-md">
+            <Phone className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600 font-medium uppercase tracking-wide">Phone Number</p>
+            <p className="font-bold text-gray-800 text-lg">
+              {admissionData.phone}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Address */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-blue-100 hover:shadow-xl transition-shadow">
+        <div className="flex items-center">
+          <div className="bg-blue-600 p-3 rounded-full mr-4 shadow-md">
+            <MapPin className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600 font-medium uppercase tracking-wide">Address</p>
+            <p className="font-bold text-gray-800 text-lg">
+              {admissionData.address}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Date of Birth */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-blue-100 hover:shadow-xl transition-shadow">
+        <div className="flex items-center">
+          <div className="bg-blue-600 p-3 rounded-full mr-4 shadow-md">
+            <Calendar className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600 font-medium uppercase tracking-wide">Date of Birth</p>
+            <p className="font-bold text-gray-800 text-lg">
+              {new Date(admissionData.dob).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* Review Form */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
           <div className="flex items-center mb-6">
             <MessageCircle className="w-8 h-8 text-blue-600 mr-3" />
-            <h3 className="text-2xl font-bold text-gray-800">Add Your Review</h3>
+            <h3 className="text-2xl font-bold text-gray-800">
+              Add Your Review
+            </h3>
           </div>
 
           <form onSubmit={handleSubmitReview} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Your Review
-              </label>
+             
               <textarea
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none resize-none"
                 rows="4"
@@ -319,7 +427,9 @@ const MyCollegePage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Rating</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Rating
+              </label>
               <div className="flex items-center space-x-4">
                 <select
                   className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
