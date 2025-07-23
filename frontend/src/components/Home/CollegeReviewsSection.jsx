@@ -18,6 +18,11 @@ const renderStars = (count) => (
     <span className="ml-2 text-blue-600 font-semibold text-sm">{count}.0</span>
   </div>
 );
+// ✅ Safe date formatter
+const safeFormatYear = (dateString) => {
+  const date = new Date(dateString);
+  return isNaN(date) ? "Unknown Year" : format(date, "yyyy");
+};
 
 const CollegeReviewsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -123,7 +128,7 @@ const CollegeReviewsSection = () => {
                           <span>{review.course}</span>
                           <span>•</span>
                           <span>
-                            {format(new Date(review.createdAt), "yyyy")}
+                          <span>{safeFormatYear(review.createdAt)}</span>
                           </span>
                         </div>
                       </div>
