@@ -6,12 +6,12 @@
 
 ## 🚀 Features
 
-- 🔍 Search functionality to find specific colleges
-- 🏫 Dynamic display of college cards with details (admission, events, research, sports)
-- 📷 College image gallery & research paper section
-- 📝 User admission form with form validation and storage
-- 💬 Reviews system with ratings that reflect on the home page
-- 👤 User profile view and editable profile (name, email, university, address)
+- Search functionality to find specific colleges
+- Dynamic display of college cards with details (admission, events, research, sports)
+- College image gallery & research paper section
+- User admission form with form validation and storage
+- Reviews system with ratings that reflect on the home page
+- User profile view and editable profile (name, email, university, address)
 
 ---
 
