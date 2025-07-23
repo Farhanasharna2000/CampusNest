@@ -30,6 +30,20 @@ const researchPapers = [
     category: "Cybersecurity",
     year: "2024",
   },
+  {
+    title: "AI in Healthcare: Predicting Diseases Using Machine Learning",
+    authors: "Farzana Rahman, Mehedi Hasan",
+    link: "https://example.com/research/ai-healthcare.pdf",
+    category: "Artificial Intelligence",
+    year: "2024",
+  },
+  {
+    title: "Sustainable Architecture: A Study of Green Campus Designs",
+    authors: "Ayesha Zaman, Rahat Khan",
+    link: "https://example.com/research/green-architecture.pdf",
+    category: "Architecture",
+    year: "2024",
+  },
 ];
 
 const ResearchPapersSection = () => {
@@ -55,7 +69,7 @@ const ResearchPapersSection = () => {
         </div>
 
         {/* Papers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3  gap-8">
           {researchPapers.map((paper, index) => (
             <div
               key={index}
