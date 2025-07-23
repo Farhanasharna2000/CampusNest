@@ -90,6 +90,7 @@ const AdmissionPage = () => {
       }
     } catch (err) {
       console.error(err);
+      toast.error("You have already applied to a college");
     }
   };
 
